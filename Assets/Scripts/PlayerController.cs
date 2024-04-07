@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
 
+
 public class PlayerController : MonoBehaviour
 {
     private Rigidbody rb;
@@ -13,27 +14,38 @@ public class PlayerController : MonoBehaviour
     private float movementY;
     public float speed = 0;
     public float jumpForce = 0;
-    private bool canDoubleJump;
+    private int jumpCount = 0;
     public TextMeshProUGUI countText;
+
+
     // Start is called before the first frame update
     void Start()
     {
         count = 0;
         rb = GetComponent <Rigidbody>();
         SetCountText();
-        canDoubleJump = true;
+
     }
 
     
+    
+
 
 
 
     void Update()
     {
-        if (Keyboard.current.spaceKey.wasPressedThisFrame && canDoubleJump)
+        if (Keyboard.current.spaceKey.wasPressedThisFrame && jumpCount < 2)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            canDoubleJump = false; //disable double jump after the player jumps
+            jumpCount++;
+        }
+        //Restart player position if falling over the edge
+        if (transform.position.y < -5)
+        {
+            transform.position = new Vector3(0, 0.5f, 0);
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
         }
     }
 
@@ -41,7 +53,7 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Ground"))
         {
-            canDoubleJump = true; //enable double jump when the player touches the ground
+            jumpCount = 0; //reset jump count when the player touches the ground
         }
     }
     void OnMove(InputValue movementValue)
